@@ -2,17 +2,20 @@ package encryptdecrypt;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Encrypt encrypt = new Encrypt("we found a treasure!");
-        encrypt.reverse();
+        Scanner scanner = new Scanner(System.in);
+        Encrypt encrypt = new Encrypt(scanner.nextLine());
+        encrypt.shift(scanner.nextInt());
         System.out.println(encrypt.toString());
     }
 }
 
 class Encrypt {
     private char[] sentence;
+    private static String alphabet = "abcdefghijklmnopqrstuvwxyz";
 
     public Encrypt(String sentence) {
         this.sentence = sentence.toCharArray();
@@ -26,9 +29,19 @@ class Encrypt {
     }
 
     private char letterToReverse(char ch) {
-        Character[] alphabet = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-        Arrays.sort(alphabet, Collections.reverseOrder());
-        return alphabet[(int)ch - 97];
+        StringBuilder reversedAlphabet = new StringBuilder();
+        for (int i = alphabet.length() - 1; i > 0; i--) {
+            reversedAlphabet.append(alphabet.charAt(i));
+        }
+        return reversedAlphabet.charAt((int)ch - 97);
+    }
+
+    public void shift(int key) {
+        for (int i = 0; i < this.sentence.length; i++) {
+            if ((int)this.sentence[i] > 96 && (int)this.sentence[i] < 123) {
+                this.sentence[i] = alphabet.charAt(((int)this.sentence[i] - 97 + key) % alphabet.length());
+            }
+        }
     }
 
     @Override
