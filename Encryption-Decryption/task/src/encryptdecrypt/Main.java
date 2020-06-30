@@ -1,7 +1,10 @@
 package encryptdecrypt;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
@@ -9,6 +12,8 @@ public class Main {
         String mode = "enc";
         int key = 0;
         String data = "";
+        String fileInLocation = null;
+        String fileOutLocation = null;
 
         for (int i = 0; i < args.length; i += 2) {
             switch (args[i]) {
@@ -21,6 +26,22 @@ public class Main {
                 case "-data":
                     data = args[i + 1];
                     break;
+                case "-in":
+                    fileInLocation = args[i + 1];
+                    break;
+                case "-out":
+                    fileOutLocation = args[i + 1];
+                    break;
+            }
+        }
+
+        if (fileInLocation != null) {
+            File f = new File(fileInLocation);
+            try (Scanner scanner = new Scanner(f)) {
+                data = scanner.nextLine().trim();
+            } catch (FileNotFoundException e) {
+                System.out.println("File not found");
+                return;
             }
         }
 
@@ -32,7 +53,15 @@ public class Main {
             encrypt.unshift(key);
         }
 
-        System.out.println(encrypt.toString());
+        if (fileOutLocation == null) {
+            System.out.println(encrypt.toString());
+        } else {
+            try (PrintWriter outFile = new PrintWriter(fileOutLocation)){
+                outFile.print(encrypt.toString());
+            } catch (IOException e) {
+                System.out.println("IO file exception!");
+            }
+        }
     }
 }
 
