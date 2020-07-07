@@ -21,3 +21,6 @@ content:
 - Parse url
 - Max and Min
 - Pick your team
+- Motor static factory
+- Clock factory
+- Static factory methods for Time
