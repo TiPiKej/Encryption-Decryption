@@ -14,6 +14,7 @@ public class Main {
         String data = "";
         String fileInLocation = null;
         String fileOutLocation = null;
+        String alg = "shift";
 
         for (int i = 0; i < args.length; i += 2) {
             switch (args[i]) {
@@ -32,6 +33,9 @@ public class Main {
                 case "-out":
                     fileOutLocation = args[i + 1];
                     break;
+                case "-alg":
+                    alg = args[i + 1];
+                    break;
             }
         }
 
@@ -47,10 +51,12 @@ public class Main {
 
         Encrypt encrypt = new Encrypt(data);
 
+        encrypt.setAlgorithm(alg);
+
         if (mode.equals("enc")) {
-            encrypt.shift(key);
+            encrypt.hash(key);
         } else if (mode.equals("dec")) {
-            encrypt.unshift(key);
+            encrypt.unHash(key);
         }
 
         if (fileOutLocation == null) {
@@ -68,44 +74,74 @@ public class Main {
 class Encrypt {
     private char[] sentence;
     private static String alphabet = "abcdefghijklmnopqrstuvwxyz";
+    private char alg;
 
     public Encrypt(String sentence) {
         this.sentence = sentence.toCharArray();
     }
 
-    public void reverse() {
-        for (int i = 0; i < this.sentence.length; i++) {
-            if ((int)this.sentence[i] > 96 && (int)this.sentence[i] < 123)
-                this.sentence[i] = letterToReverse(this.sentence[i]);
-        }
+    public void hash(int key) {
+        if (alg == 'u') this.shiftUnicode(key);
+        else this.shiftAlphabet(key);
     }
 
-    public void shift(int key) {
+    public void unHash(int key) {
+        if (alg == 'u') this.unShiftUnicode(key);
+        else this.unShiftAlphabet(key);
+    }
+
+    public void shiftUnicode(int key) {
         for (int i = 0; i < this.sentence.length; i++) {
             this.sentence[i] += key;
         }
     }
 
-    public void unshift(int key) {
+    public void unShiftUnicode(int key) {
         for (int i = 0; i < this.sentence.length; i++) {
             this.sentence[i] -= key;
         }
     }
 
-    private char letterToReverse(char ch) {
-        StringBuilder reversedAlphabet = new StringBuilder();
-        for (int i = alphabet.length() - 1; i > 0; i--) {
-            reversedAlphabet.append(alphabet.charAt(i));
-        }
-        return reversedAlphabet.charAt((int)ch - 97);
+    public void shiftAlphabet(int key) {
+        this.shiftAlphabetAlgorithm(key, "shift");
     }
 
-    public void shiftOnlyInAplhabet(int key) {
+    public void unShiftAlphabet(int key) {
+        this.shiftAlphabetAlgorithm(key, "unShift");
+    }
+
+    private void shiftAlphabetAlgorithm(int key, String mode) {
+        int nbrOfFirstLetter;
         for (int i = 0; i < this.sentence.length; i++) {
-            if ((int)this.sentence[i] > 96 && (int)this.sentence[i] < 123) {
-                this.sentence[i] = alphabet.charAt(((int)this.sentence[i] - 97 + key) % alphabet.length());
+            nbrOfFirstLetter = 0;
+
+//            check if letter is lower case (a - 97) or upper case (A - 65)
+            if (96 < (int)this.sentence[i] && (int)this.sentence[i] < 123) nbrOfFirstLetter = 97;
+            if (65 <= (int)this.sentence[i] && (int)this.sentence[i] < 90) nbrOfFirstLetter = 65;
+
+            if (nbrOfFirstLetter == 0) continue;
+
+//            shift letter in alphabet (!!! in lower case)
+
+            int shiftNbr = -nbrOfFirstLetter;
+            if (mode.charAt(0) == 'u') shiftNbr -= key;
+            else shiftNbr += key;
+
+            while ((int)this.sentence[i] + shiftNbr < 0) {
+                shiftNbr += alphabet.length();
+            }
+
+            this.sentence[i] = alphabet.charAt(((int)this.sentence[i] + shiftNbr) % alphabet.length());
+
+//            if letter is upper case -> i move it into upper case
+            if (nbrOfFirstLetter == 65) {
+                this.sentence[i] = (char) ((int) this.sentence[i] - 32);
             }
         }
+    }
+
+    public void setAlgorithm(String alg) {
+        this.alg = alg.charAt(0);
     }
 
     @Override
